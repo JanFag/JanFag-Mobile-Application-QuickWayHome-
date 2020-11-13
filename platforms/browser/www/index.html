@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="msapplication-tap-highlight" content="no" />
+	<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+	<meta http-equiv="Content-Security-Policy" content="
+			default-src 'self' 'unsafe-inline'  http://api.openweathermap.org https://mts.googleapis.com https://maps.googleapis.com https://maps.gstatic.com ws://192.168.100.28:3000/ http://code.jquery.com https://code.jquery.com https://csi.gstatic.com  https://ssl.gstatic.com https://api.opencagedata.com http://proto387.haaga-helia.fi https://api.digitransit.fi gap: data: blob: filesystem: ;" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+	<script src="https://code.jquery.com/jquery-2.1.4.js" integrity="sha256-siFczlgw4jULnUICcdm9gjQPZkw/YPDqhQ9+nAOScE4="	crossorigin="anonymous"></script>
+	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+   <link rel="stylesheet" type="text/css" href="css/index.css">
+   
+   <title>QuickWayHome</title>
+</head>
+
+<body>
+
+	<!--alkaa etusivu-->
+	<div style="background-color: #e9f6f8;" data-role="page" id="etusivu">
+		<div style="background-color: #287b8b;" data-role="header">
+			<h2>Reitit</h2>
+		</div>
+
+		<div data-demo-html="true">
+			<div data-role="navbar" data-iconpos="left">
+				<ul>
+					<li><a href="#etusivu" data-icon="navigation" style="background-color:#9dc183">Reitit</a></li>
+					<li><a href="#osoitteet" data-icon="gear" >Osoitteet</a></li>
+					<li><a href="#saa" data-icon="cloud"  >Sää</a></li>
+				</ul>
+			</div>
+		</div>
+
+		<div role="main" class="ui-content ui-body-a">
+			<div id="paiva"></div>
+		</div> 
+
+		<div style="padding:30px 40px;" class="ui-field-contain">		
+			<label for="select-address"><b>Olet tässä: </b></label>
+			<p id="place3"></p>
+		</div>
+	
+		<div style="padding:30px 40px;" class="ui-field-contain">
+			<label for="select-address"><b>Minne olet menossa: </b></label>
+			    <select name="select-address" id="select-address" data-native-menu="false" data-normal="true">
+				    <option>Valitse osoite...</option>
+					<option value="1">Kotiosoite</option>
+			        <option value="2">Työosoite</option>
+			        <option value="3">Muu osoite</option>			        
+			    </select>
+		</div>
+
+		<div>
+			<input type="button" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check" style="background-color:yellow ;" id="haeReitit" value="Hae reittiehdotukset">
+			
+		</div>
+		
+		<div>
+			
+			<table data-role="table" id="reitit" class="ui-responsive">
+				
+				<thead> 
+				
+					<div id = "ehdotukset" class = "ehdotukset" style="background-color:rgb(165, 189, 110)"></div>
+					<div id="reittibuttons"></div>
+					
+					
+					
+						  
+						
+					<tr><th></th></tr>                  
+									
+					</tr>
+				
+				</thead>
+				<tbody>
+					
+				</tbody>
+				
+			</table>
+
+		</div>
+		<div id="reittimap" style="height:600px"></div>
+		<div class="footer">
+			<h1>QuickWayHome</h1>
+		</div>
+	</div>
+		
+	<!--alkaa osoitteet-sivu-->
+	<div style="background-color: #e9f6f8;" data-role="page" id="osoitteet">
+		<div style="background-color: #287b8b; font-size: 14px; " data-role="header">
+			
+			<h2>Tallenna osoitteet</h2>
+		</div>
+		<div data-demo-html="true">
+			<div data-role="navbar" data-iconpos="left">
+				<ul>
+					<li><a href="#etusivu" data-icon="navigation">Reitit</a></li>
+					<li><a href="#osoitteet" data-icon="gear" style="background-color:#9dc183" >Osoitteet</a></li>
+					<li><a href="#saa" data-icon="cloud" >Sää</a></li>
+				</ul>
+			</div>
+		</div> 
+		
+	<div class="pop1"><a href="#popupKoti" style="background-color:rgb(234, 236, 197)" data-rel="popup" data-position-to="window" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-icon-home ui-btn-icon-left ui-btn-a" data-transition="pop">Lisää kotiosoite</a></div>
+	<div class="pop1"><a href="#popupTyo" style="background-color:rgb(234, 236, 197)" data-rel="popup" data-position-to="window" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-icon-shop ui-btn-icon-left ui-btn-a" data-transition="pop">Lisää työosoite</a></div>
+	<div class = "pop1"><a href="#popupMuu" style="background-color:rgb(234, 236, 197)" data-rel="popup" data-position-to="window" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-icon-heart ui-btn-icon-left ui-btn-a" data-transition="pop">Lisää muu osoite</a></div>
+		
+		
+		<div data-role="popup" id="popupKoti" data-theme="a" class="ui-corner-all">
+			<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
+			<div style="padding:30px 40px;">
+					<form id="lisaaLomakeKoti">
+						<h3>Lisää kotiosoite:</h3>										
+						<label for="osoiteKoti" class="ui-hidden-accessible">Osoite:</label>
+						<input type="text" name="osoiteKoti" id="osoiteKoti" value="" placeholder="Katuosoite" data-theme="a">
+						<label for="kaupunkiKoti" class="ui-hidden-accessible">Kaupunki:</label>
+						<input type="text" name="kaupunkiKoti" id="kaupunkiKoti" value="" placeholder="Kaupunki" data-theme="a">
+						<input type="button" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check" data-theme="b" id="lisaaKoti" value="Tallenna">
+					</form>
+			</div>
+		</div> 
+
+		
+		<div data-role="popup" id="popupTyo" data-theme="a" >
+			<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
+			
+			<div style="padding:30px 40px;">
+				<h3>Lisää työosoite:</h3>
+					<form id="lisaaLomakeTyo">											
+						<label for="osoiteTyo" class="ui-hidden-accessible">Osoite:</label>
+						<input type="text" name="osoiteTyo" id="osoiteTyo" value="" placeholder="Katuosoite" data-theme="a">
+						<label for="kaupunkiTyo" class="ui-hidden-accessible">Kaupunki:</label>
+						<input type="text" name="kaupunkiTyo" id="kaupunkiTyo" value="" placeholder="Kaupunki" data-theme="a">
+						<input type="button" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check" data-theme="b" id="lisaaTyo" value="Tallenna">
+					</form>
+			</div>
+		</div> 
+		
+		<div data-role="popup" id="popupMuu" data-theme="a" class="ui-corner-all">
+			<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
+			<div style="padding:30px 40px;">
+					<form id="lisaaLomakeMuu">
+						<h3>Lisää muu osoite:</h3>					
+						<label for="osoiteMuu" class="ui-hidden-accessible">Osoite:</label>
+						<input type="text" name="osoiteMuu" id="osoiteMuu" value="" placeholder="Katuosoite" data-theme="a">
+						<label for="kaupunkiMuu" class="ui-hidden-accessible">Kaupunki:</label>
+						<input type="text" name="kaupunkiMuu" id="kaupunkiMuu" value="" placeholder="Kaupunki" data-theme="a">
+						<input type="button" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check" data-theme="b" id="lisaaMuu" value="Tallenna">
+					</form>
+			</div>
+		</div> 
+		
+
+			<div class="footer">
+			<h1>QuickWayHome</h1>
+			</div>
+	</div>
+
+
+	<!--alkaa sääsivu-->
+	<div data-role="page"  id="saa">
+		<div style="padding:20px 30px; background-color: #e9f6f8;" data-role="header" class="ui-field-contain">
+				
+				<label><b>Sää paikassa: </b></label>
+				<pre id="place"></pre>
+				
+			
+		</div>
+			
+		<div data-demo-html="true">
+			<div data-role="navbar" data-iconpos="left">
+				<ul>
+					<li><a href="#etusivu" data-icon="navigation">Reitit</a></li>
+					<li><a href="#osoitteet" data-icon="gear" >Osoitteet</a></li>
+					<li><a href="#saa" data-icon="cloud" style="background-color: #9dc183" >Sää</a></li>
+				</ul>
+			</div>
+		</div>     
+		<div data-role="main" style="background-color: #e9f6f8" class="ui-content ui-body-a">
+			<div id="saaVastaus">Säätä haetaan...</div> 	
+			<div id="mapKartta" style="height:200px"></div> 			
+		</div>
+		<div class="footer">
+			<h1>QuickWayHome</h1>
+		</div>
+	</div>
+
+
+	<script type="text/javascript" src="cordova.js"></script> <!-- mahdollistaa laitteen ominaisuuksien käytön -->	
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+	
+	<script>
+		
+		
+		
+		
+		$(document).on("pagecreate", "#etusivu", function() { 	//Sivun luonti, tehdään kerran
+			
+			$("#paiva").text(haePaiva());
+			//deleteLocal();
+			saaSivuKesken.resolve();
+			 
+		});
+		
+		$(document).on("pagecreate", "#osoitteet", function() { 	//Sivun luonti, tehdään kerran
+			saaSivuKesken.resolve();
+			
+		});
+
+		$(document).on("pagecreate", "#saa", function() {		//Sivun luonti, tehdään kerran
+			saaSivuKesken.resolve();
+					
+		});
+		
+		
+
+		//paikannus/Sään hakeminen
+		//Laitetaan kaksi jarrua päälle. 
+		var laiteKesken = $.Deferred(); //jarru_1=True
+		var saaSivuKesken = $.Deferred(); //jarru_2=True	
+		
+		//Kun molemmat jarrut on avattu aloitamme laitteen koordinaattien etsimisen (Käytä Firefoxia)
+		$.when(laiteKesken, saaSivuKesken).done(saaSivuValmis);
+		
+		//Lisätään tapahtumankuuntelija tapahtumalle "onDeviceReady"
+		document.addEventListener("deviceReady", onDeviceReady, false);
+		function onDeviceReady() {			
+			laiteKesken.resolve();	//jarru_1=False				
+		}	
+		
+		
+		
+		var lat
+		var lon
+		function saaSivuValmis() {
+		
+			navigator.geolocation.getCurrentPosition(onLocationSuccess, onLocationError, { timeout: 20000 });
+			
+			function onLocationSuccess(position) {
+				var sijainti = position;	
+				lon = position.coords.longitude;
+				lat = position.coords.latitude;		
+				haeSaa(position.coords.latitude, position.coords.longitude);		
+				teeMap(position.coords.latitude, position.coords.longitude);
+				getName(position.coords.latitude, position.coords.longitude);
+				savePosition(position.coords.latitude, position.coords.longitude);
+				var geolocation = {
+        			lat: position.coords.latitude,
+        			lng: position.coords.longitude};
+				var circle = new google.maps.Circle(
+				{center: geolocation, radius: position.coords.accuracy});
+				autocomplete.setBounds(circle.getBounds());
+						
+			}
+			function onLocationError() {				
+				console.log("Paikannus ei onnistu");
+			}
+		}
+
+		var reittikarttalat
+		var reittikarttalon
+		function savePosition(lat, lon){
+
+			 reittikarttalat = lat;
+			 reittikarttalon = lon;
+		}
+
+		
+		function haeSaa(lat, lon) {
+			$.ajax(
+				{
+				url: "http://api.openweathermap.org/data/2.5/weather?lang=fi&lat=" + lat 
+				+ "&lon=" + lon +"&units=metric&APPID=e0596e4d3d4061db7b4b9ef7314a14d3",
+				dataType: "json",
+				timeout: 5000
+				}
+			).done(function(data) 
+				{
+				var teksti = "<h3 style='margin-bottom:0em'>" +
+				"<img align='middle' src='http://api.openweathermap.org/img/w/" + data.weather[0].icon + "'>" + 
+				data.main.temp.toFixed(1) + "'C</h3>";	
+				teksti = teksti + "<p>" + data.weather[0].description + "</p>";
+				$("#saaVastaus").html(teksti);
+				}
+			).fail(function() 
+				{
+				$("#saaVastaus").html("Säätä ei pystytä hakemaan");
+				}
+			)
+		}
+
+
+		
+		function teeMap(lat, lon) {				
+			var paikka = new google.maps.LatLng(lat, lon);			
+			var myOptions = {
+				zoom:10,
+				center: paikka
+			};
+			var kartta = new google.maps.Map(document.getElementById("mapKartta"), myOptions);	//tai $("#mapKartta")[0], myOptions	
+			var marker = new google.maps.Marker({
+				position: paikka,
+				map: kartta,
+				title: "Olet tässä"
+			})		
+						
+		}
+		
+		var sijaintiKatu
+		var sijaintiKaupunki
+		function getName(lat, lon){
+			var query = lat +","+lon;
+					$.ajax({
+						url: 'https://api.opencagedata.com/geocode/v1/json',
+						method: 'GET',
+						data: {
+						'key': 'ef42d808c6bb48fca57ab42401859244',
+						'q': query,
+						'no_annotations': 1						
+						// https://opencagedata.com/api#forward-opt
+						//https://api.opencagedata.com/geocode/v1/json?q=Moabit%2C%20Berlin&key=ef42d808c6bb48fca57ab42401859244&language=fi&pretty=1
+					    },
+						dataType: 'json',
+						statusCode: {
+					200: function(response){  // success
+							//console.log(response.results[0].formatted);
+							sijaintiKatu = response.results[0].components.road +" "+ response.results[0].components.house_number;
+							sijaintiKaupunki = response.results[0].components.city;
+							//console.log(sijaintiKaupunki);
+							$("#place").html(sijaintiKatu + ", " + sijaintiKaupunki); //sääsivulle
+							$("#place3").html(sijaintiKatu + ", " + sijaintiKaupunki); //etuivulle
+						},
+					402: function(){
+							console.log('hit free-trial daily limit');
+							console.log('become a customer: https://opencagedata.com/pricing');
+						}
+						// other possible response codes:
+						// https://opencagedata.com/api#codes
+						}
+					});
+    	}
+
+		var latitudeConverted;
+		var longitudeConverted;
+		
+		function getGeos(street, city, num){
+			var query = street +","+city;
+				//tänne jonkinlainen osoitteen tarkastus, muuten päästää läpi, jos kaupunki löytyy
+			
+			$.ajax({
+			url: 'https://api.opencagedata.com/geocode/v1/json',
+			method: 'GET',
+			data: {
+			'key': 'ef42d808c6bb48fca57ab42401859244',
+			'q': query,
+			'no_annotations': 1
+			// https://opencagedata.com/api#forward-opt
+			//https://api.opencagedata.com/geocode/v1/json?q=Laukkukuja%2C%20Helsinki&key=ef42d808c6bb48fca57ab42401859244&language=fi&pretty=1
+			//https://api.opencagedata.com/geocode/v1/json?q=60.25830%2C%2025.06656&key=ef42d808c6bb48fca57ab42401859244&language=fi&pretty=1
+			},
+			dataType: 'json',
+			statusCode: {
+			200: function(response){  // success'
+				try {
+					latitudeConverted = response.results[0].geometry.lat;
+					longitudeConverted = response.results[0].geometry.lng;
+					if (num == 1){
+						lisaaTietokantaanKoti();
+					} else if (num == 2){				
+						lisaaTietokantaanTyo();
+					} else {
+						lisaaTietokantaanMuu();
+					}
+
+				}
+				catch(err) {
+					console.log(err.message);
+					alert("Osoitetta ei löydy. Tarkista osoite.")
+				}
+			
+			},
+			402: function(){
+				
+			}
+			// other possible response codes:
+			// https://opencagedata.com/api#codes
+			}
+		});
+		}
+
+    
+
+
+		function haePaiva(){
+			var now = new Date();			
+			var d = now.getDate();
+			var m = now.getMonth()+1;
+			var y = now.getFullYear();
+			return d + "." + m + "." + y;
+		}
+
+		var time
+		function haeReittiPaiva(){
+			var now = new Date();
+			var hours = now.getHours();
+			var minutes = now.getMinutes();
+			var seconds = now.getSeconds();
+			time = hours+":"+minutes+":"+seconds;
+			var d = now.getDate();
+			var m = now.getMonth()+1;
+			var y = now.getFullYear(); 
+			return y + "-"+ m +"-"+d;
+		}
+
+		
+		
+		$("#lisaaKoti").on("tap", function(){
+			if($("#osoiteKoti").val().length > 0&&$("#kaupunkiKoti").val().length>0){
+				getGeos($("#osoiteKoti").val(), $("#kaupunkiKoti").val(), 1);
+			} else { 
+				alert("Täytä kaikki kentät.")
+			}
+		
+			
+		});
+
+		$("#lisaaTyo").on("tap", function(){
+			if($("#osoiteTyo").val().length > 0&&$("#kaupunkiTyo").val().length>0){
+				getGeos($("#osoiteTyo").val(), $("#kaupunkiTyo").val(), 2);
+			}else {
+				alert("Täytä kaikki kentät.")
+			}
+
+			
+		});
+
+		$("#lisaaMuu").on("tap", function(){
+			if($("#osoiteMuu").val().length > 0&&$("#kaupunkiMuu").val().length>0){
+				getGeos($("#osoiteMuu").val(), $("#kaupunkiMuu").val(), 3);
+			} else{
+				alert("Täytä kaikki kentät.")
+			}
+			
+		});
+
+
+		var existings = "$";
+		var kotiosoite
+		function lisaaTietokantaanKoti(){
+			
+			haeMuistista();
+			kotiosoite = "kotiosoite";
+			if($("#osoiteKoti").val().length > 0&&$("#kaupunkiKoti").val().length){	
+				var question 				
+				if (existings.includes("$" + kotiosoite + "$")){
+					$.getJSON("http://proto387.haaga-helia.fi/~a1300757/backend/selectOsoitteenKuvaus.php?osoitteenKuvaus="+kotiosoite, function(result){
+								$.each(result, function(i, field) {	
+									question = confirm("Kotiosoite on jo olemassa. Tallennettu kotiosoite on: " + field.osoite + ", " + field.kaupunki + ". Haluatko päivittää olemassa olevan osoitteen?");
+								})	
+					
+						if(question == true){
+							$.ajax({
+						type: 'POST',
+						
+						//http://proto387.haaga-helia.fi/~a1300757/backend/UpdateOsoite.php?osoite=Pasila&kaupunki=Helsinki&latitude=1223.45&longitude=456.45&osoitteenKuvaus=Kotiosoite
+						url: 'http://proto387.haaga-helia.fi/~a1300757/backend/UpdateOsoite.php?osoite='+$("#osoiteKoti").val() +"&kaupunki="+$("#kaupunkiKoti").val()+"&latitude="+latitudeConverted+"&longitude="+longitudeConverted+"&osoitteenKuvaus="+kotiosoite,
+						success: function(){	
+							document.getElementById("lisaaLomakeKoti").reset();
+							alert("Kotiosoite on päivitetty.")
+
+						},
+						error: function(){						
+							console.log("error");						
+						}
+						});
+						} else {
+							$.getJSON("http://proto387.haaga-helia.fi/~a1300757/backend/selectOsoitteenKuvaus.php?osoitteenKuvaus="+kotiosoite, function(result){
+								$.each(result, function(i, field) {	
+								alert("Tallennettu kotiosoite on: " + field.osoite + ", " + field.kaupunki)
+								})
+							})
+							document.getElementById("lisaaLomakeKoti").reset();
+						}
+					})
+					
+				} else {
+					$.ajax({
+					type: 'POST',
+					//data: $("#lisaaLomake").serialize(),
+					url: 'http://proto387.haaga-helia.fi/~a1300757/backend/insertOsoitteet.php?osoitteenKuvaus='+kotiosoite +"&osoite="+$("#osoiteKoti").val()+"&kaupunki="+$("#kaupunkiKoti").val()+"&latitude="+latitudeConverted+"&longitude="+longitudeConverted,
+					success: function(){	
+						
+						existings = existings + kotiosoite + "$";
+						lisaaMuistiin(existings);				
+						
+						document.getElementById("lisaaLomakeKoti").reset();		
+						alert("Osoite on lisätty")				
+					},
+					error: function(){						
+						console.log("error")					
+					}
+				});	
+				}
+							
+			}	else {
+				alert("Täytä kaikki kentät")
+			}		
+		};
+
+		var tyoosoite
+		function lisaaTietokantaanTyo(){			
+			haeMuistista();
+			tyoosoite = "work";
+			if($("#osoiteTyo").val().length > 0&&$("#kaupunkiTyo").val().length>0){
+
+				var question			
+				if (existings.includes("$" + tyoosoite + "$")){
+					$.getJSON("http://proto387.haaga-helia.fi/~a1300757/backend/selectOsoitteenKuvaus.php?osoitteenKuvaus="+tyoosoite, function(result){
+								$.each(result, function(i, field) {	
+									question = confirm("Työosoite on jo olemassa. Tallennettu työosoite on: " + field.osoite + ", " + field.kaupunki + ". Haluatko päivittää olemassa olevan osoitteen?");
+								})
+						if(question == true){
+							$.ajax({
+						type: 'POST',
+						url: 'http://proto387.haaga-helia.fi/~a1300757/backend/UpdateOsoite.php?osoite='+$("#osoiteTyo").val() +"&kaupunki="+$("#kaupunkiTyo").val()+"&latitude="+latitudeConverted+"&longitude="+longitudeConverted+"&osoitteenKuvaus="+tyoosoite,
+						success: function(){	
+							document.getElementById("lisaaLomakeTyo").reset();
+						
+							alert("Työosoite on päivitetty.")
+						},
+						error: function(){						
+							console.log("error");						
+						}
+						});
+						} else {
+							$.getJSON("http://proto387.haaga-helia.fi/~a1300757/backend/selectOsoitteenKuvaus.php?osoitteenKuvaus="+tyoosoite, function(result){
+								$.each(result, function(i, field) {	
+								alert("Työosoite on: " + field.osoite + ", " + field.kaupunki)
+								})
+							})
+							document.getElementById("lisaaLomakeTyo").reset();
+							
+						}
+					})
+					
+				} else {
+					$.ajax({
+					type: 'POST',
+					//data: $("#lisaaLomake").serialize(),
+					url: 'http://proto387.haaga-helia.fi/~a1300757/backend/insertOsoitteet.php?osoitteenKuvaus='+tyoosoite +"&osoite="+$("#osoiteTyo").val()+"&kaupunki="+$("#kaupunkiTyo").val()+"&latitude="+latitudeConverted+"&longitude="+longitudeConverted,
+					success: function(){	
+						
+						existings = existings + tyoosoite + "$";
+						lisaaMuistiin(existings);				
+						
+						document.getElementById("lisaaLomakeTyo").reset();
+						alert("Osoite on lisätty")		
+
+					},
+					error: function(){						
+						console.log("error")					
+					}
+				});	
+				}
+							
+			}	else {
+				alert("Täytä kaikki kentät")
+			}		
+		};
+
+		var muuosoite
+		function lisaaTietokantaanMuu(){			
+			haeMuistista();
+			muuosoite = "muuosoite";
+			if($("#osoiteMuu").val().length > 0&&$("#kaupunkiMuu").val().length){	
+								
+				if (existings.includes("$" + muuosoite + "$")){
+					var question
+					$.getJSON("http://proto387.haaga-helia.fi/~a1300757/backend/selectOsoitteenKuvaus.php?osoitteenKuvaus="+muuosoite, function(result){
+								$.each(result, function(i, field) {
+									question = confirm("Muu osoite on jo olemassa. Tallennettu muu osoite on: " + field.osoite + ", " + field.kaupunki + ". Haluatko päivittää olemassa olevan osoitteen?");
+								})
+					
+					
+						if(question == true){
+							$.ajax({
+						type: 'POST',
+						//data: $("#lisaaLomake").serialize(),
+						//http://proto387.haaga-helia.fi/~a1300757/backend/UpdateOsoite.php?osoite=Pasila&kaupunki=Helsinki&latitude=1223.45&longitude=456.45&osoitteenKuvaus=Kotiosoite
+						url: 'http://proto387.haaga-helia.fi/~a1300757/backend/UpdateOsoite.php?osoite='+$("#osoiteMuu").val() +"&kaupunki="+$("#kaupunkiMuu").val()+"&latitude="+latitudeConverted+"&longitude="+longitudeConverted+"&osoitteenKuvaus="+muuosoite,
+						success: function(){	
+							document.getElementById("lisaaLomakeMuu").reset();
+							alert("Osoite on päivitetty." );
+						},
+						error: function(){						
+							console.log("error");						
+						}
+						});
+						} else {
+							$.getJSON("http://proto387.haaga-helia.fi/~a1300757/backend/selectOsoitteenKuvaus.php?osoitteenKuvaus="+muuosoite, function(result){
+								$.each(result, function(i, field) {	
+								alert("Muu osoite on: " + field.osoite + ", " + field.kaupunki)
+								})
+							})
+							document.getElementById("lisaaLomakeMuu").reset();
+						}
+					})
+					
+				} else {
+					$.ajax({
+					type: 'POST',
+					
+					url: 'http://proto387.haaga-helia.fi/~a1300757/backend/insertOsoitteet.php?osoitteenKuvaus='+muuosoite +"&osoite="+$("#osoiteMuu").val()+"&kaupunki="+$("#kaupunkiMuu").val()+"&latitude="+latitudeConverted+"&longitude="+longitudeConverted,
+					success: function(){	
+						
+						existings = existings + muuosoite + "$";
+						lisaaMuistiin(existings);				
+						
+						document.getElementById("lisaaLomakeKoti").reset();	
+						alert("Osoite on lisätty")				
+					},
+					error: function(){						
+						console.log("error")					
+					}
+				});	
+				}
+							
+			}	else {
+				alert("Täytä kaikki kentät")
+			}		
+		};
+
+		function deleteLocal(){	
+							
+			localStorage.removeItem("existings");			
+		};
+            
+		function lisaaMuistiin(existings){						
+			localStorage.setItem("existings", JSON.stringify(existings));			
+		};
+
+		
+		function haeMuistista(){
+			//$("#tietoLista").empty();
+			if(localStorage.getItem("existings")!=null){				
+				existings=JSON.parse(localStorage.getItem("existings"));			
+			}				
+		};	
+
+		
+		$("#haeReitit").on("tap", function(){
+			haeReittiehdotukset()
+		});
+
+
+		function makeQuery(valittuAddress, valittuCity, valittuLatitude, valittuLongitude ){
+			var date = haeReittiPaiva();			 
+			var query = '{'
+				+ 'plan('
+							+'  fromPlace: "' + sijaintiKatu + ', ' + sijaintiKaupunki + '::' + lat +','+ lon +'",'
+							+'  toPlace: "'  + valittuAddress + ', ' + valittuCity+'::'+ valittuLatitude+ ',' +valittuLongitude +'",'
+							+'  date: "' + date + '",'
+							+'  time: "'+time+'",'
+							+'  numItineraries: 3,'
+							+'  transportModes: [{mode: BUS}, {mode: RAIL}, {mode:TRAM}, {mode:WALK}]'
+							+'  walkReluctance: 2.1,'
+							+'  walkBoardCost: 300,'
+							+'  minTransferTime: 600,'
+							+'  walkSpeed: 1.7,'
+							+') {'
+							+'  itineraries{'
+							+'    walkDistance'
+							+'    duration'
+							+'    legs {'
+							+'      mode'
+							+'      startTime'
+							+'      endTime'
+							+'      from {'
+							+'        lat'
+							+'        lon'
+							+'        name'
+							+'        stop {'
+							+'          code'
+							+'          name'
+							+'         }'
+							+'       }'
+							+'       to {'
+							+'         lat'
+							+'         lon'
+							+'         name'
+							+'         stop {'
+							+'           code'
+							+'           name'
+							+'         }'
+							+'       }'
+							+'       trip {'
+							+'         tripHeadsign'
+							+'         routeShortName'
+							+'       }'
+							+'       distance'
+							+'       legGeometry {'
+							+'         length'
+							+'         points'
+							+'       }'
+							+'     }'
+							+'   }'
+							+' }'
+							+'}';
+
+				
+			jatkaReitit(query);
+		};
+		
+		var valittuAddress
+		var valittuCity
+		var valittuLatitude
+		var valittuLongitude
+		function haeReittiehdotukset(){
+			var e = document.getElementById("select-address");
+			var valittuOsoite = e.options[e.selectedIndex].value;
+			if (valittuOsoite == 1){
+				haeMuistista();
+				if (existings.includes("$kotiosoite$")){
+					$.getJSON("http://proto387.haaga-helia.fi/~a1300757/backend/selectOsoitteenKuvaus.php?osoitteenKuvaus=kotiosoite", function(result){
+						
+						valittuAddress = (result[0].osoite);
+						valittuCity = (result[0].kaupunki);
+						valittuLatitude = (result[0].latitude);
+						valittuLongitude = (result[0].longitude);						
+						makeQuery(valittuAddress, valittuCity, valittuLatitude, valittuLongitude);		
+					});					
+				} else {
+					alert("Et ole vielä tallentanut kotiosoitetta. Tallenna se Osoitteet-välilehdestä.")
+				}
+				
+			} else if (valittuOsoite == 2){
+				haeMuistista();
+				if (existings.includes("$work$")){
+					$.getJSON("http://proto387.haaga-helia.fi/~a1300757/backend/selectOsoitteenKuvaus.php?osoitteenKuvaus=work", function(result){
+						
+						valittuAddress = (result[0].osoite);
+						valittuCity = (result[0].kaupunki);
+						valittuLatitude = (result[0].latitude);
+						valittuLongitude = (result[0].longitude);						
+						//console.log(valittuCity, valittuLatitude, valittuLongitude);
+						makeQuery(valittuAddress, valittuCity, valittuLatitude, valittuLongitude);			
+					});					
+				} else {
+					alert("Et ole vielä tallentanut työosoitetta. Tallenna se Osoitteet-välilehdestä.")
+				}
+			} else {
+				haeMuistista();
+				if (existings.includes("$muuosoite$")){
+					$.getJSON("http://proto387.haaga-helia.fi/~a1300757/backend/selectOsoitteenKuvaus.php?osoitteenKuvaus=muuosoite", function(result){		
+						valittuAddress = (result[0].osoite);
+						valittuCity = (result[0].kaupunki);
+						valittuLatitude = (result[0].latitude);
+						valittuLongitude = (result[0].longitude);						
+						//console.log(valittuCity, valittuLatitude, valittuLongitude);
+						makeQuery(valittuAddress, valittuCity, valittuLatitude, valittuLongitude);			
+					});					
+				} else {
+					alert("Et ole vielä tallentanut muuta osoitetta. Tallenna se Osoitteet-välilehdestä.")
+				}
+			}
+			
+		};
+			
+		
+		function jatkaReitit(query){
+
+		
+				//https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql					
+
+				$.ajax(
+				{
+				method: 'POST',
+				url: "https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql",
+				contentType: "application/json",
+				
+				data: JSON.stringify({ query:query}),
+				
+				
+				success: function(data){	
+					//console.log(data.data.plan.itineraries[0].walkDistance);
+						tulostaReitit(data);					
+					},
+				error: function(){						
+						$("#ruokaLista").append("Ruokalistaa ei saatu haettua");						
+				}
+			});	
+			
+		};	
+		
+		var viestiArray = [];
+		var viestiArray2 = [];
+		var viestiArray3 = [];
+		var locations = [];
+		var locations2 = [];
+		var locations3 = [];
+		function tulostaReitit(data){
+
+
+		viestiArray = [];
+		 viestiArray2 = [];
+		 viestiArray3 = [];
+		
+			var paikka={
+							"lat" : "",
+							"lng" : ""
+							};				
+
+				var allRoutesArray = data.data.plan.itineraries;
+				for (var ind = 0; ind< allRoutesArray.length; ind++){
+				
+					var dataArray= data.data.plan.itineraries[ind].legs;
+					
+							
+					paikka = {
+							"lat" : dataArray[ind].from.lat,
+							"lng" : dataArray[ind].from.lon
+							};
+
+				
+						locations.push(paikka);
+				
+						locations2.push(paikka);
+				
+						locations3.push(paikka);
+				
+				
+
+					if(allRoutesArray.length > 1 ){
+						
+						var reitinNro = "<tr><td><b>"+"Reittiehdotus numero " + (ind+1) + "</b></td></tr>";
+						if (ind == 0) {
+								viestiArray.push(reitinNro);
+						} else if (ind == 1){
+								viestiArray2.push(reitinNro);
+						} else {
+								viestiArray3.push(reitinNro);
+						}
+						
+								
+					}
+						
+						for (var i = 0; i < dataArray.length; i++){
+							
+
+							
+							if(dataArray[i].mode == "WALK"){
+								//epoch timestamp
+								var reittiStartTime = convertTimestamptoTime(dataArray[i].startTime);				
+								var reittiEndTime = convertTimestamptoTime(dataArray[i].endTime);				
+								var min = countMinutes(reittiStartTime, reittiEndTime);
+								var minViesti 
+								if(min == 1){
+									minViesti = min + " minuutti"
+								} else {
+									minViesti = min + " minuuttia"
+								}
+								
+								paikka = {
+										"lat" : dataArray[i].to.lat,
+										"lng" : dataArray[i].to.lon
+										};
+										if (ind == 0) {
+											locations.push(paikka);
+										} else if (ind == 1){
+											locations2.push(paikka);
+										} else {
+											locations3.push(paikka);
+										}
+										
+								//console.log(paikka);
+								
+								var reittiViesti = "Lähde kello " + reittiStartTime;
+								var kavely								
+
+								if (dataArray[i].to.stop !== null && dataArray[i].from.stop !== null){
+									
+									kavely = reittiViesti + ". Kävele " + Math.round(dataArray[i].distance) + " metriä (" + minViesti +") paikasta '" + dataArray[i].from.name + "' (pysäkki numero: " + dataArray[i].from.stop.code + ") paikkaan '" + dataArray[i].to.name + "' (pysäkki numero: " + dataArray[i].to.stop.code + ")";
+									if (ind == 0) {
+											viestiArray.push(kavely);
+										} else if (ind == 1){
+											viestiArray2.push(kavely);
+										} else {
+											viestiArray3.push(kavely);
+										}
+									
+								} else if(dataArray[i].to.stop !== null){
+									kavely = reittiViesti + ". Kävele " + Math.round(dataArray[i].distance) + " metriä (" + minViesti +") paikasta '"  + dataArray[i].from.name + "' paikkaan '" + dataArray[i].to.name + "' (pysäkki numero: " + dataArray[i].to.stop.code + ")"; 
+									if (ind == 0) {
+											viestiArray.push(kavely);
+										} else if (ind == 1){
+											viestiArray2.push(kavely);
+										} else {
+											viestiArray3.push(kavely);
+										}
+									
+							
+								} else {
+									kavely = reittiViesti + ". Kävele " + Math.round(dataArray[i].distance) + " metriä (" + minViesti +") paikasta '"  + dataArray[i].from.name + "' paikkaan '" + dataArray[i].to.name + "'";
+									if (ind == 0) {
+											viestiArray.push(kavely);
+										} else if (ind == 1){
+											viestiArray2.push(kavely);
+										} else {
+											viestiArray3.push(kavely);
+										}
+									
+								}
+						
+									
+							} else if(dataArray[i].mode == "RAIL"){
+									var juna = "Ota juna '" + dataArray[i].trip.routeShortName + "' suuntaan '" + dataArray[i].trip.tripHeadsign + "', jonka lähtöaika on: " + convertTimestamptoTime(dataArray[i].startTime) + ".";
+									var juna1= "Juna lähtee pysäkiltä '" + dataArray[i].from.stop.name + "' numero '" + dataArray[i].from.stop.code + "'. ";
+									var juna2 = "Jää pois paikassa '" + dataArray[i].to.stop.name + "', pysäkki numero '"+dataArray[i].to.stop.code+ "', kello " + convertTimestamptoTime(dataArray[i].endTime);
+									//viestiArray.push(juna);
+									//viestiArray.push(juna1);
+									//viestiArray.push(juna2);
+									paikka = {
+										"lat" : dataArray[i].to.lat,
+										"lng" : dataArray[i].to.lon
+										};
+										if (ind == 0) {
+											locations.push(paikka);
+										} else if (ind == 1){
+											locations2.push(paikka);
+										} else {
+											locations3.push(paikka);
+										}
+
+										if (ind == 0) {
+											viestiArray.push(juna);
+											viestiArray.push(juna1);
+											viestiArray.push(juna2);
+										} else if (ind == 1){
+											viestiArray2.push(juna);
+											viestiArray2.push(juna1);
+											viestiArray2.push(juna2);
+										} else {
+											viestiArray3.push(juna);
+											viestiArray3.push(juna1);
+											viestiArray3.push(juna2);
+										}
+
+							} else if(dataArray[i].mode == "BUS"){
+								var bussi = "Ota bussi '" + dataArray[i].trip.routeShortName + "' suuntana '" +dataArray[i].trip.tripHeadsign +"' pysäkiltä '" + dataArray[i].from.stop.name+ "' numero '" + dataArray[i].from.stop.code + " kello " + convertTimestamptoTime(dataArray[i].startTime);
+								var bussi1 = "Jää pois paikassa '" + dataArray[i].to.stop.name + "', pysäkki numero '" + dataArray[i].to.stop.code + "', kello " + convertTimestamptoTime(dataArray[i].endTime);
+								//viestiArray.push(bussi);
+								//viestiArray.push(bussi1);
+								paikka = {
+										"lat" : dataArray[i].to.lat,
+										"lng" : dataArray[i].to.lon
+										};
+										if (ind == 0) {
+										locations.push(paikka);
+										} else if (ind == 1){
+											locations2.push(paikka);
+										} else {
+											locations3.push(paikka);
+										}
+
+										if (ind == 0) {
+											viestiArray.push(bussi);
+											viestiArray.push(bussi1);
+											
+										} else if (ind == 1){
+											viestiArray2.push(bussi);
+											viestiArray2.push(bussi1);
+											
+										} else {
+											viestiArray3.push(bussi);
+											viestiArray3.push(bussi1);
+											
+										}
+
+							} else if(dataArray[i].mode == "TRAM"){
+								var tram = "Ota ratikka '" + dataArray[i].trip.routeShortName + "' suuntana '" +dataArray[i].trip.tripHeadsign +"' pysäkiltä '" + dataArray[i].from.stop.name+ "' numero '" + dataArray[i].from.stop.code + " kello " + convertTimestamptoTime(dataArray[i].startTime);
+								var tram1 = "Jää pois paikassa '" + dataArray[i].to.stop.name + "', pysäkki numero '" + dataArray[i].to.stop.code + "' kello " + convertTimestamptoTime(dataArray[i].endTime);
+								//viestiArray.push(tram);
+								//viestiarray.push(tram1);
+								paikka = {
+										"lat" : dataArray[i].to.lat,
+										"lng" : dataArray[i].to.lon
+										};
+
+										if (ind == 0) {
+										locations.push(paikka);
+										} else if (ind == 1){
+											locations2.push(paikka);
+										} else {
+											locations3.push(paikka);
+										}
+
+										if (ind == 0) {
+											viestiArray.push(tram);
+											viestiArray.push(tram1);
+											
+										} else if (ind == 1){
+											viestiArray2.push(tram);
+											viestiArray2.push(tram1);
+											
+										} else {
+											viestiArray3.push(tram);
+											viestiArray3.push(tram1);
+											
+										}
+							} else {
+								console.log("ei löytynyt modea");
+							}
+							
+						}
+
+				}	
+
+				naytaReitit(viestiArray);
+				teeReittikartta();
+				makeBounds(locations);
+				
+
+		};
+
+		var paikka2
+		var reittikartta
+		function teeReittikartta(){
+			
+			var infoWindow = new google.maps.InfoWindow;
+			paikka2 = new google.maps.LatLng(reittikarttalat, reittikarttalon);
+			//console.log(reittikarttalon +","+ reittikarttalat);
+			var myOptions2 = {
+				zoom: 8,
+				center: paikka2, 
+				//mapTypeId: google.maps.MapTypeId.ROADMAP
+			};
+
+			 reittikartta = new google.maps.Map(document.getElementById("reittimap"), myOptions2);
+			
+			//google.maps.event.addListener(reittikartta, "click", function (event) {
+				
+				
+				
+				//var marker = locations.map(function(location, i) {
+				//		return new google.maps.Marker({
+				//    	position: location,
+				//		map: reittikartta,
+				//		title: "paikka_"+(i+1)
+				//		})
+				//})
+				
+				//makeBounds(locations2);
+				//makeBounds(locations3);
+
+				//google.maps.event.addListener(marker, 'click', (function(marker, i) {
+				//	return function() {
+				//		infowindow.setContent(locations[i][0]);
+				//		infowindow.open(reittikartta, marker);
+				//	}
+				//	})(marker, i));
+
+				
+				
+
+				
+			
+			
+
+			
+			//infoWindow.setPosition(paikka2);
+            //infoWindow.setContent('Olet tässä.');
+            //infoWindow.open(reittikartta);
+
+			//var markers = locations.map(function(location, i) {
+			//			return new google.maps.Marker({
+			//				position: location,
+			//				map: reittikartta,
+			//				title: "paikka_"+(i+1),	
+			//				label: laskeEtaisyys(new google.maps.LatLng(location)) + " km"
+			//			});
+						
+			//	})
+
+				
+				//	});
+
+		};
+
+		function setMap(){
+			flightPath.setMap(null);
+		}
+		var flightPath
+		function makeBounds(locations){
+					
+					var directionsService = new google.maps.DirectionsService();
+					var directionsDisplay = new google.maps.DirectionsRenderer();
+					directionsDisplay.setMap(reittikartta);
+					
+					var bounds
+					//for (var i = 0; i< locations.length; i++){
+						var loppu = locations.length -1
+						//var y = 1
+						var start = new google.maps.LatLng(locations[0].lat, locations[0].lng);
+					
+						var end = new google.maps.LatLng(locations[loppu].lat, locations[loppu].lng);
+						//bounds = new google.maps.LatLngBounds();
+						//bounds.extend(start);
+						//bounds.extend(end);
+						//reittikartta.fitBounds(bounds);
+						
+						//}
+						var flightPlanCoordinates = [];
+						for(var y = 0; y< locations.length; y++){
+							
+							flightPlanCoordinates.push(new google.maps.LatLng(locations[y].lat, locations[y].lng));
+							
+						}
+						console.log(flightPlanCoordinates );
+
+						    flightPath = new google.maps.Polyline({
+							path: flightPlanCoordinates,
+							editable: true,
+							strokeColor: '#FF0000',
+							strokeOpacity: 1.0,
+							strokeWeight: 2,
+							map: reittikartta
+							});
+							
+						
+
+							//var markers = locMarks.map(function(location, index) {
+							//return new google.maps.Marker({
+							//position: location,
+							//map: reittikartta,
+							//title: "paikka_"+(index+1),	
+							
+							var marker1 = new google.maps.Marker({
+							position: start,
+							map: reittikartta,
+							title: 'A'
+							});
+
+							var marker2 = new google.maps.Marker({
+							position: end,
+							map: reittikartta,
+							title: 'B'
+							});
+							
+							
+
+					
+
+
+					
+			
+  }
+	
+
+	
+
+
+		function naytaReitit(viesti){
+			//console.log(viesti);
+			$("#ehdotukset").html("<b>Reittiehdotukset</b> ");
+			if(viestiArray2.length == 0){
+				$("#reitit tbody").html("");
+				for(var i = 0; i< viesti.length; i++) {					
+					$("#reitit tbody").append("<tr><td>"+viesti[i] + "</td></tr>");							
+				};
+			} else {
+			$("#reittibuttons").html(
+					"<a href='javascript: naytaReitit(viestiArray), makeBounds(locations), setMap();' class='ui-btn ui-btn-inline'>Reitti 1</a>"
+					+"<a href='javascript: naytaReitit(viestiArray2), makeBounds(locations2), setMap();' class='ui-btn ui-btn-inline'>Reitti 2</a>"
+					+"<a href='javascript: naytaReitit(viestiArray3), makeBounds(locations3), setMap();' class='ui-btn ui-btn-inline'>Reitti 3</a>"
+					)
+			$("#reitit tbody").html("");
+			for(var i = 0; i< viesti.length; i++) {					
+				$("#reitit tbody").append("<tr><td>"+viesti[i] + "</td></tr>");							
+			};
+			}
+		};
+		
+
+		function convertTimestamptoTime(startTime) { 
+            
+			var time
+            var dateObj = new Date(startTime); 
+            
+			var hours = dateObj.getHours();
+			var minutes = dateObj.getMinutes(); 
+			if(minutes<10){
+				time = hours+':'+ '0'+ minutes;
+			} else {
+				time = hours+':'+ minutes;
+			}
+            return time; 
+        } ;
+			
+		function countMinutes(startTime, endTime){
+
+			var tulosMin
+			var tulosHour
+			var startMin = parseInt(startTime.substr(3, 5));
+			var startHour = parseInt(startTime.substr(0, 2));
+			var endMin = parseInt(endTime.substr(3, 5));
+			var endHour = parseInt(endTime.substr(0, 2));
+			if(endHour == 0 && startHour == 23){
+				endHour = 24;
+
+			}
+			
+			if(endMin>startMin){
+				tulosMin = endMin - startMin;
+				tulosHour = endHour - startHour;
+				if(tulosHour == 0){
+					return tulosMin;
+				} else {
+					tulosMin = tulosMin + (tulosHour*60);
+					return tulosMin;
+				}
+
+			} else if (endMin<startMin){
+				tulosMin = (60 - startMin)+endMin;
+				tulosHour = endHour - startHour
+				if(tulosHour==1) {				
+				
+				return tulosMin 
+				} else {
+					tulosHour = (tulosHour * 60)+tulosMin;
+					return tulosHour;
+				}
+			} 
+
+			
+		}		
+
+			var placeSearch 
+			var autocomplete
+
+			var componentForm = {
+			street_number: 'short_name',
+			route: 'long_name',
+			locality: 'long_name'
+			};
+
+			function initAutocomplete() {
+			// Create the autocomplete object, restricting the search predictions to
+			// geographical location types.
+				autocomplete = new google.maps.places.Autocomplete(
+				document.getElementById('autocomplete'), {types: ['geocode']});
+
+			// Avoid paying for data that you don't need by restricting the set of
+			// place fields that are returned to just the address components.
+			autocomplete.setFields(['address_component']);
+
+			// When the user selects an address from the drop-down, populate the
+			// address fields in the form.
+			autocomplete.addListener('place_changed', fillInAddress);
+			}
+
+			function fillInAddress() {
+			// Get the place details from the autocomplete object.
+			var place = autocomplete.getPlace();
+
+			for (var component in componentForm) {
+				document.getElementById(component).value = '';
+				document.getElementById(component).disabled = false;
+			}
+
+			// Get each component of the address from the place details,
+			// and then fill-in the corresponding field on the form.
+			for (var i = 0; i < place.address_components.length; i++) {
+				var addressType = place.address_components[i].types[0];
+				if (componentForm[addressType]) {
+				var val = place.address_components[i][componentForm[addressType]];
+				document.getElementById(addressType).value = val;
+				}
+			}
+			}
+
+			
+		
+	
+			
+
+
+		</script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWmo01EFhVYA_AXj4F5OP3qvZPFbYIxJ4&libraries=places&callback=initAutocomplete" async defer></script>
+	</body>
+
+</html>
